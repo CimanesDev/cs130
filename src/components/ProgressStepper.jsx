@@ -1,5 +1,3 @@
-import { colors } from '../styles/colors';
-
 const ProgressStepper = ({ currentStep, onStepClick, compact = true }) => {
   const steps = [
     { title: "Input", subtitle: "" },

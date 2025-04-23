@@ -223,7 +223,7 @@ export default class QuineMcCluskeyAlgorithm {
     const coveredMinterms = new Set();
 
     // Find essential PIs (columns with only one X)
-    for (const [m, pis] of coverageMap.entries()) {
+    for (const pis of coverageMap.entries()) {
       if (pis.length === 1) {
         const epi = pis[0];
         if (!this.essentialPrimeImplicants.some(e => e.equals(epi))) {
