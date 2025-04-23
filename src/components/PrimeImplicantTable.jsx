@@ -1,9 +1,25 @@
-const PrimeImplicantTable = ({ tableData, minterms }) => {
-  if (!tableData || !minterms) return null;
+import React from 'react';
+
+const PrimeImplicantTable = ({ tableData }) => {
+  if (!tableData) return null;
+  
+  const { primeImplicants, minterms } = tableData;
+  
+  if (!primeImplicants || !minterms || primeImplicants.length === 0) {
+    return (
+      <div className="card animate-fade delay-200">
+        <h2 className="section-title">Prime Implicant Table</h2>
+        <p>No prime implicants found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="card animate-fade delay-200">
       <h2 className="section-title">Prime Implicant Table</h2>
+      <div className="mt-2 mb-2">
+        <strong>Note:</strong> Displaying complemented minterms (maxterms)
+      </div>
       <div className="table-container">
         <table>
           <thead>
@@ -22,7 +38,7 @@ const PrimeImplicantTable = ({ tableData, minterms }) => {
             </tr>
           </thead>
           <tbody>
-            {tableData.map((row, i) => (
+            {primeImplicants.map((row, i) => (
               <tr key={i}>
                 <td style={{
                   position: 'sticky',
