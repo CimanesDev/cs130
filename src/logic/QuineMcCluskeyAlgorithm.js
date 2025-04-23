@@ -1,30 +1,45 @@
+/**
+ *Implementation of the Quine-McCluskey algorithm for finding minimal Product of Sums (POS)
+ *Boolean expressions from a set of maxterms (or complement of minterms).
+ *This implementation finds the minimal POS form using essential prime implicants.
+ */
 import Minterm from './Minterm';
 
 export default class QuineMcCluskeyAlgorithm {
+  /**
+   *Creates a new instance of the Quine-McCluskey algorithm.
+   *@param {number[]} mintermsDecimal - Array of decimal minterms
+   *@param {string} variablesLetter - String of variable letters (e.g., "ABCD")
+   */
   constructor(mintermsDecimal, variablesLetter) {
-    // Store original minterms
+    //Store original minterms
     this.originalMinterms = [...mintermsDecimal];
     this.variablesLetter = variablesLetter;
     this.numberOfVariables = variablesLetter.length;
     
-    // Generate the complement of the minterms (maxterms)
+    //Generate the complement of the minterms (maxterms)
     this.mintermsDecimal = this.generateComplement(mintermsDecimal);
     
+    //Initialize data structures
     this.mintermList = [];
-    this.simplification = [];
+    this.simplification = []; //Holds intermediate steps of the algorithm
     this.primeImplicants = [];
     this.essentialPrimeImplicants = [];
     this.simplificationDisplay = '';
     this.primeImplicantTableDisplay = '';
     this.essentialPrimeImplicantsDisplay = '';
 
-    // Convert decimal minterms to binary representation
+    //Convert decimal minterms to binary representation
     for (const m of this.mintermsDecimal) {
       this.mintermList.push(new Minterm(m, this.numberOfVariables));
     }
   }
 
-  // Generate the complement of the given minterms
+  /**
+   *Generate the complement of the given minterms (finds maxterms).
+   *@param {number[]} minterms - Array of decimal minterms
+   *@returns {number[]} Array of decimal maxterms
+   */
   generateComplement(minterms) {
     const totalPossibleMinterms = 1 << this.numberOfVariables; // 2^n
     const complement = [];
@@ -38,20 +53,27 @@ export default class QuineMcCluskeyAlgorithm {
     return complement;
   }
 
+  /**
+   *Main method to execute the Quine-McCluskey algorithm.
+   */
   solve() {
-    // Step 1: Group by ones
+    //Step 1: Group minterms by number of ones in binary representation
     const groups = this.groupByOnes();
 
-    // Step 2: Find prime implicants
+    //Step 2: Find prime implicants through iterative combining
     this.findPrimeImplicants(groups);
 
-    // Step 3: Create prime implicant table
+    //Step 3: Create prime implicant table for visualization
     this.createPrimeImplicantTable();
 
-    // Step 4: Find essential prime implicants
+    //Step 4: Find essential prime implicants to build minimal expression
     this.findEssentialPrimeImplicants();
   }
 
+  /**
+   *Groups minterms by the number of '1' bits in their binary representation.
+   *@returns {Array<Array<Minterm>>} Array of groups, where each group contains minterms with same number of ones
+   */
   groupByOnes() {
     const groups = Array(this.numberOfVariables + 1).fill().map(() => []);
 
@@ -63,11 +85,16 @@ export default class QuineMcCluskeyAlgorithm {
     return groups;
   }
 
+  /**
+   *Find prime implicants by iteratively combining minterms.
+   *Prime implicants are minterms that cannot be combined further.
+   *@param {Array<Array<Minterm>>} groups - Initial groups of minterms
+   */
   findPrimeImplicants(groups) {
     let currentGroups = groups;
     this.simplification.push(currentGroups.map(group => [...group]));
     
-    // Track all terms for later verification
+    //Track all terms for later verification
     const allTerms = new Set();
     this.mintermList.forEach(m => allTerms.add(m));
 
@@ -75,7 +102,7 @@ export default class QuineMcCluskeyAlgorithm {
       const newGroups = [];
       let hasCombinations = false;
       
-      // Track which terms were combined in this iteration
+      //Track which terms were combined in this iteration
       const combinedTerms = new Set();
 
       for (let i = 0; i < currentGroups.length - 1; i++) {
@@ -89,6 +116,7 @@ export default class QuineMcCluskeyAlgorithm {
 
         const combinedGroup = [];
 
+        //Try to combine minterms from adjacent groups
         for (const minterm1 of currentGroup) {
           for (const minterm2 of nextGroup) {
             const { success, minterm } = minterm1.combineMinterms(minterm2);
@@ -97,10 +125,10 @@ export default class QuineMcCluskeyAlgorithm {
               combinedTerms.add(minterm1);
               combinedTerms.add(minterm2);
               
-              // Add new minterm to all terms
+              //Add new minterm to all terms
               allTerms.add(minterm);
 
-              // Check if term already exists
+              //Check if term already exists to avoid duplicates
               const existing = combinedGroup.find(m => m.equals(minterm));
               if (existing) {
                 minterm.getSetOfMinterms().forEach(m => existing.getSetOfMinterms().add(m));
@@ -114,7 +142,8 @@ export default class QuineMcCluskeyAlgorithm {
         newGroups.push(combinedGroup);
       }
 
-      // Find terms that weren't combined in this iteration
+      //Find terms that weren't combined in this iteration
+      //These become prime implicants
       if (currentGroups.length > 0) {
         for (const group of currentGroups) {
           for (const term of group) {
@@ -125,13 +154,14 @@ export default class QuineMcCluskeyAlgorithm {
         }
       }
 
+      //If no combinations were made, we're done
       if (!hasCombinations) break;
 
       currentGroups = newGroups;
       this.simplification.push(newGroups.map(group => [...group]));
     }
 
-    // Add the terms from the final iteration as prime implicants
+    //Add the terms from the final iteration as prime implicants
     if (currentGroups.length > 0) {
       for (const group of currentGroups) {
         for (const term of group) {
@@ -140,12 +170,15 @@ export default class QuineMcCluskeyAlgorithm {
       }
     }
 
-    // Remove duplicates from prime implicants
+    //Remove duplicates from prime implicants
     this.primeImplicants = this.primeImplicants.filter(
       (m, i, self) => i === self.findIndex(mm => mm.equals(m))
     );
   }
 
+  /**
+   *Creates a visual table showing which minterms are covered by which prime implicants.
+   */
   createPrimeImplicantTable() {
     let table = `Prime Implicant        | `;
     table += this.mintermsDecimal.map(m => m.toString().padEnd(4)).join('');
@@ -153,7 +186,7 @@ export default class QuineMcCluskeyAlgorithm {
     table += '-'.repeat(22) + '-|-' + '-'.repeat(this.mintermsDecimal.length * 4) + '\n';
 
     for (const pi of this.primeImplicants) {
-      // Convert the prime implicant to a POS term
+      //Convert the prime implicant to a POS term
       const expr = this.mintermToPOSExpression(pi);
       table += expr.padEnd(22) + ' | ';
       
@@ -166,6 +199,10 @@ export default class QuineMcCluskeyAlgorithm {
     this.primeImplicantTableDisplay = table;
   }
 
+  /**
+   *Returns structured data for the prime implicant table.
+   *@returns {Object} Object containing prime implicants and minterms data
+   */
   getPrimeImplicantTableData() {
     return {
       primeImplicants: this.primeImplicants.map(pi => ({
@@ -176,13 +213,17 @@ export default class QuineMcCluskeyAlgorithm {
     };
   }
 
-  // Convert a minterm to POS expression (for displaying in the table)
+  /**
+   *Convert a minterm to POS expression for display in the table.
+   *@param {Minterm} minterm - The minterm to convert
+   *@returns {string} POS expression representation
+   */
   mintermToPOSExpression(minterm) {
     const binRep = minterm.getBinaryRepresentation();
     let expr = '';
     let firstVar = true;
     
-    // For POS, we need to show it as a sum term
+    //For POS, we need to show it as a sum term
     expr += '(';
     
     for (let i = 0; i < binRep.length; i++) {
@@ -194,8 +235,8 @@ export default class QuineMcCluskeyAlgorithm {
           firstVar = false;
         }
         
-        // For POS from maxterms, if bit is 0, variable is uncomplemented
-        // If bit is 1, variable is complemented
+        //For POS from maxterms, if bit is 0, variable is uncomplemented
+        //If bit is 1, variable is complemented
         const varName = this.variablesLetter.charAt(i);
         expr += bit === '0' ? varName : `${varName}'`;
       }
@@ -205,13 +246,18 @@ export default class QuineMcCluskeyAlgorithm {
     return expr;
   }
 
+  /**
+   *Finds essential prime implicants and additional prime implicants 
+   *needed for a minimal POS expression.
+   */
   findEssentialPrimeImplicants() {
+    //Create map to track which prime implicants cover each minterm
     const coverageMap = new Map();
     for (const m of this.mintermsDecimal) {
       coverageMap.set(m, []);
     }
   
-    // Find which prime implicants cover each minterm
+    //Find which prime implicants cover each minterm
     for (const pi of this.primeImplicants) {
       for (const m of this.mintermsDecimal) {
         if (pi.doesItMatch(m)) {
@@ -222,14 +268,14 @@ export default class QuineMcCluskeyAlgorithm {
   
     const coveredMinterms = new Set();
   
-    // eslint-disable-next-line
+    //Find essential prime implicants (those that are the only ones covering a minterm)
     for (const [minterm, pis] of coverageMap.entries()) {
       if (pis.length === 1) {
         const epi = pis[0];
         if (!this.essentialPrimeImplicants.some(e => e.equals(epi))) {
           this.essentialPrimeImplicants.push(epi);
           
-          // Add all minterms covered by this EPI
+          //Add all minterms covered by this EPI to the covered set
           for (const cm of this.mintermsDecimal) {
             if (epi.doesItMatch(cm)) {
               coveredMinterms.add(cm);
@@ -239,6 +285,7 @@ export default class QuineMcCluskeyAlgorithm {
       }
     }
   
+    //Create display string
     let display = "Essential Prime Implicants:\n";
     if (this.essentialPrimeImplicants.length === 0) {
       display += "No essential prime implicants found\n";
@@ -248,21 +295,21 @@ export default class QuineMcCluskeyAlgorithm {
       }
     }
   
-    // Handle uncovered minterms
+    //Handle uncovered minterms using a greedy approach
     const uncovered = this.mintermsDecimal.filter(m => !coveredMinterms.has(m));
     if (uncovered.length > 0) {
       display += `\nNot all minterms are covered by essential prime implicants\n`;
       display += `Uncovered minterms: ${uncovered.join(', ')}\n`;
   
-      // Add additional PIs to cover remaining minterms
+      //Add additional PIs to cover remaining minterms
       let remainingUncovered = [...uncovered];
       while (remainingUncovered.length > 0) {
         let bestPi = null;
         let maxCoverage = 0;
   
-        // Find PI that covers most uncovered minterms
+        //Find PI that covers most uncovered minterms (greedy approach)
         for (const pi of this.primeImplicants) {
-          // Skip if already an essential prime implicant
+          //Skip if already an essential prime implicant
           if (this.essentialPrimeImplicants.some(epi => epi.equals(pi))) continue;
           
           let coverCount = 0;
@@ -280,10 +327,10 @@ export default class QuineMcCluskeyAlgorithm {
           this.essentialPrimeImplicants.push(bestPi);
           display += `Added additional prime implicant: ${this.mintermToPOSExpression(bestPi)}\n`;
           
-          // Remove covered minterms
+          //Remove newly covered minterms
           remainingUncovered = remainingUncovered.filter(m => !bestPi.doesItMatch(m));
         } else {
-          break;
+          break; //No more coverage possible
         }
       }
     }
@@ -295,6 +342,11 @@ export default class QuineMcCluskeyAlgorithm {
   
     this.essentialPrimeImplicantsDisplay = display;
   }
+
+  /**
+   *Displays the initial grouping of minterms by number of ones.
+   *@returns {string} Formatted display of grouped minterms
+   */
   displayGroupedMinterms() {
     const groups = this.simplification[0];
     let output = '';
@@ -315,6 +367,10 @@ export default class QuineMcCluskeyAlgorithm {
     return output;
   }
 
+  /**
+   *Displays the process of combining terms through iterations.
+   *@returns {string} Formatted display of term combinations
+   */
   displayCombiningTerms() {
     let output = '';
     
@@ -347,14 +403,26 @@ export default class QuineMcCluskeyAlgorithm {
     return output;
   }
 
+  /**
+   *Returns the prime implicant table as a string.
+   *@returns {string} Formatted prime implicant table
+   */
   displayPrimeImplicantsTable() {
     return this.primeImplicantTableDisplay;
   }
 
+  /**
+   *Returns the essential prime implicants table as a string.
+   *@returns {string} Formatted essential prime implicants info
+   */
   displayEssentialPrimeImplicantsTable() {
     return this.essentialPrimeImplicantsDisplay;
   }
 
+  /**
+   *Gets the final minimal Product of Sums (POS) expression.
+   *@returns {string} Minimal POS expression
+   */
   getPOS() {
     if (this.essentialPrimeImplicants.length === 0) {
       return "No essential prime implicants";
@@ -365,7 +433,7 @@ export default class QuineMcCluskeyAlgorithm {
 
     for (const epi of this.essentialPrimeImplicants) {
       if (!firstClause) {
-        posExpression += " · ";  // Product symbol
+        posExpression += " · ";  //Product symbol
       } else {
         firstClause = false;
       }
