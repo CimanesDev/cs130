@@ -62,12 +62,14 @@ const ResultsDisplay = ({ results, error, isLoading }) => {
         {renderStepContent(results?.combiningTerms, "No prime implicants found")}
       </div>
 
-      <div id="implicant-table" className="card animate-fade">
-        <h2 className="section-title">Prime Implicant Table</h2>
-        {results?.primeImplicantTable?.length > 0 ? (
-          <PrimeImplicantTable tableData={results.primeImplicantTable} minterms={results.minterms} />
+      <div id="implicant-table">
+        {results?.primeImplicantTable ? (
+          <PrimeImplicantTable tableData={results.primeImplicantTable} />
         ) : (
-          <div className="no-data-message">No prime implicant table generated</div>
+          <div className="card animate-fade">
+            <h2 className="section-title">Prime Implicant Table</h2>
+            <div className="no-data-message">No prime implicant table generated</div>
+          </div>
         )}
       </div>
 
