@@ -41,6 +41,7 @@
 
 body {
   font-family: 'Poppins', sans-serif;
+  background-color: #121212;
   background-image: url('../../public/bg.png');
   background-attachment: fixed;
   background-size: cover;
@@ -705,6 +706,12 @@ tr:hover {
 }
 
 @media (max-width: 768px) {
+
+  body {
+    background-image: none !important;
+    background-color: #121212;
+  }
+
   .minterm-groups-grid {
     grid-template-columns: 1fr;
   }
@@ -734,4 +741,6 @@ tr:hover {
   .group-title, .iteration-title {
     font-size: 1.1rem;
   }
+
+
 }
