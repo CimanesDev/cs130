@@ -22,7 +22,6 @@ const StepDisplay = ({ step, data }) => {
 };
 
 const GroupedMintermsDisplay = ({ data }) => {
-  // Parse the grouped minterms data if it's a string
   const groupedData = typeof data === 'string' ? parseGroupedMinterms(data) : data;
   
   if (!groupedData || (groupedData.groups && groupedData.groups.length === 0)) {
@@ -222,7 +221,6 @@ const EssentialImplicantsDisplay = ({ data }) => {
   );
 };
 
-// Helper functions to parse the text data into structured objects
 function parseGroupedMinterms(data) {
   if (!data) return null;
   
@@ -295,8 +293,8 @@ function parseCombiningTerms(data) {
       isPrimeImplicantsSection = true;
       currentIteration = null;
       currentGroup = null;
-    } else if (isPrimeImplicantsSection && line.match(/^\s*[01\-]+/)) {
-      const piMatch = line.match(/([01\-]+)\s*=\s*(\([^)]+\))\s*\(covers:\s*([^)]+)\)/);
+    } else if (isPrimeImplicantsSection && line.match(/^\s*[01]+/)) {
+      const piMatch = line.match(/([01]+)\s*=\s*(\([^)]+\))\s*\(covers:\s*([^)]+)\)/);
       if (piMatch) {
         primeImplicants.push({
           binary: piMatch[1],
@@ -304,8 +302,8 @@ function parseCombiningTerms(data) {
           covers: piMatch[3]
         });
       }
-    } else if (currentGroup && line.match(/[01\-]+/)) {
-      const termMatch = line.match(/([01\-]+)\s*\(from:\s*([^)]+)\)/);
+    } else if (currentGroup && line.match(/[01]+/)) {
+      const termMatch = line.match(/([01]+)\s*\(from:\s*([^)]+)\)/);
       if (termMatch) {
         currentGroup.terms.push({
           binary: termMatch[1],
@@ -315,7 +313,6 @@ function parseCombiningTerms(data) {
     }
   }
   
-  // Add prime implicants to the last iteration
   if (iterations.length > 0) {
     iterations[iterations.length - 1].primeImplicants = primeImplicants;
   }

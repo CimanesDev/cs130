@@ -1,19 +1,19 @@
 export const colors = {
-  primary: '#3A86FF',        // Medium blue
-  primaryDark: '#2667D9',    // Darker blue
-  secondary: '#4361EE',      // Royal blue
-  accent: '#4895EF',         // Light blue
-  danger: '#FF4757',         // Bright red (kept for errors)
-  success: '#2DD4BF',        // Teal (changed from bright cyan)
-  warning: '#FFA500',        // Orange (kept)
-  light: '#F8F9FA',          // Light gray (kept)
-  dark: '#121212',           // Dark background (kept)
-  darker: '#0A0A0A',         // Even darker (kept)
-  text: '#F1F1F1',           // White text (kept)
-  textMuted: '#A0A0A0',      // Gray text (kept)
-  border: 'rgba(255, 255, 255, 0.1)', // Subtle border (kept)
-  cardBg: 'rgba(37, 37, 37, 0.85)',   // Card background (kept)
-  inputBg: 'rgba(255, 255, 255, 0.05)' // Input background (kept)
+  primary: '#3A86FF',
+  primaryDark: '#2667D9',
+  secondary: '#4361EE',
+  accent: '#4895EF',
+  danger: '#FF4757',
+  success: '#2DD4BF',
+  warning: '#FFA500',
+  light: '#F8F9FA',
+  dark: '#121212',
+  darker: '#0A0A0A',
+  text: '#F1F1F1',
+  textMuted: '#A0A0A0',
+  border: 'rgba(255, 255, 255, 0.1)',
+  cardBg: 'rgba(37, 37, 37, 0.85)',
+  inputBg: 'rgba(255, 255, 255, 0.05)'
 };
 
 export const gradients = {

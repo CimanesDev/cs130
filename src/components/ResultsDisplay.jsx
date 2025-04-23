@@ -3,7 +3,7 @@ import ProgressStepper from './ProgressStepper';
 import PrimeImplicantTable from './PrimeImplicantTable';
 import FinalResult from './FinalResult';
 import StepDisplay from './StepDisplay';
-import '../styles/stepstyles.css';
+import '../styles/global.css';
 
 const ResultsDisplay = ({ results, error, isLoading }) => {
   const [currentStep, setCurrentStep] = useState(0);

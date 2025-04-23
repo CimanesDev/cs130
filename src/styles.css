@@ -1,25 +1,11 @@
-body {
-  font-family: Arial, sans-serif;
-  line-height: 1.6;
-  margin: 0;
-  padding: 20px;
-  background-color: #121212;
-}
-
 .app {
   max-width: 1000px;
   margin: 0 auto;
-  background: rgba(37, 37, 37, 0.85);
+  background: var(--card-bg);
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  color: #F1F1F1;
-}
-
-h1 {
-  color: #F8F9FA;
-  text-align: center;
-  margin-bottom: 30px;
+  color: var(--text);
 }
 
 .input-panel {
@@ -34,29 +20,6 @@ h1 {
   margin-bottom: 15px;
 }
 
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #F8F9FA;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(58, 134, 255, 0.2);
-  border-radius: 4px;
-  box-sizing: border-box;
-  color: #F1F1F1;
-}
-
-input:focus {
-  border-color: #3A86FF;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(58, 134, 255, 0.3);
-}
-
 .button-group {
   display: flex;
   gap: 10px;
@@ -65,7 +28,7 @@ input:focus {
 
 button {
   padding: 10px 15px;
-  background: #3A86FF;
+  background: var(--primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -75,16 +38,7 @@ button {
 }
 
 button:hover {
-  background: #2667D9;
-}
-
-.error {
-  color: #FF6B6B;
-  padding: 10px;
-  background: rgba(255, 71, 87, 0.1);
-  border-radius: 4px;
-  margin-bottom: 20px;
-  border-left: 4px solid #FF4757;
+  background: var(--primary-dark);
 }
 
 .results {
@@ -96,24 +50,14 @@ button:hover {
 }
 
 .step {
-  background: rgba(37, 37, 37, 0.85);
+  background: var(--card-bg);
   padding: 15px;
   margin-bottom: 20px;
   border-radius: 8px;
-  border-left: 4px solid #3A86FF;
+  border-left: 4px solid var(--primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .last-step {
-  border-left-color: #2DD4BF;
-}
-
-pre {
-  white-space: pre-wrap;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-  color: #F1F1F1;
-  border: 1px solid rgba(58, 134, 255, 0.15);
+  border-left-color: var(--success);
 }
