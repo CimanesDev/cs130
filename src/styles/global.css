@@ -41,7 +41,11 @@
 
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: var(--dark);
+  background-image: url('../../public/bg.png');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--text);
   min-height: 100vh;
   position: relative;

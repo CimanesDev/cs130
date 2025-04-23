@@ -27,7 +27,7 @@ const Header = () => {
             maxWidth: '800px',
             textShadow: '0 1px 2px rgba(0,0,0,0.2)'
           }}>
-            A visual tool for minimizing boolean functions using the Quine-McCluskey algorithm
+            Interactive step-by-step Boolean function simplifier
             </p>
             <p style={{
             marginTop: '10px',
@@ -36,7 +36,7 @@ const Header = () => {
             maxWidth: '800px',
             textShadow: '0 1px 2px rgba(0,0,0,0.2)'
           }}>
-            Made by: Albert Caro and Josh Cimanes for CMSC 130
+            Made by: Albert Caro & Josh Cimanes | CMSC 130 MP
           </p>
         </div>
         <div style={{

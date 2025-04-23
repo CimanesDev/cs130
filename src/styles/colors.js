@@ -12,7 +12,7 @@ export const colors = {
   text: '#F1F1F1',
   textMuted: '#A0A0A0',
   border: 'rgba(255, 255, 255, 0.1)',
-  cardBg: 'rgba(37, 37, 37, 0.85)',
+  cardBg: '#252525',
   inputBg: 'rgba(255, 255, 255, 0.05)'
 };
 
