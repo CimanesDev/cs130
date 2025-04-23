@@ -293,8 +293,8 @@ function parseCombiningTerms(data) {
       isPrimeImplicantsSection = true;
       currentIteration = null;
       currentGroup = null;
-    } else if (isPrimeImplicantsSection && line.match(/^\s*[01]+/)) {
-      const piMatch = line.match(/([01]+)\s*=\s*(\([^)]+\))\s*\(covers:\s*([^)]+)\)/);
+    } else if (isPrimeImplicantsSection && line.match(/^\s*[01/-]+/)) {
+      const piMatch = line.match(/([01/-]+)\s*=\s*(\([^)]+\))\s*\(covers:\s*([^)]+)\)/);
       if (piMatch) {
         primeImplicants.push({
           binary: piMatch[1],
@@ -302,8 +302,8 @@ function parseCombiningTerms(data) {
           covers: piMatch[3]
         });
       }
-    } else if (currentGroup && line.match(/[01]+/)) {
-      const termMatch = line.match(/([01]+)\s*\(from:\s*([^)]+)\)/);
+    } else if (currentGroup && line.match(/[01/-]+/)) {
+      const termMatch = line.match(/([01/-]+)\s*\(from:\s*([^)]+)\)/);
       if (termMatch) {
         currentGroup.terms.push({
           binary: termMatch[1],
