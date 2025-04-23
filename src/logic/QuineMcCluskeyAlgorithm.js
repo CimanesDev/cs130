@@ -210,7 +210,7 @@ export default class QuineMcCluskeyAlgorithm {
     for (const m of this.mintermsDecimal) {
       coverageMap.set(m, []);
     }
-
+  
     // Find which prime implicants cover each minterm
     for (const pi of this.primeImplicants) {
       for (const m of this.mintermsDecimal) {
@@ -219,11 +219,11 @@ export default class QuineMcCluskeyAlgorithm {
         }
       }
     }
-
+  
     const coveredMinterms = new Set();
-
-    // Find essential PIs (columns with only one X)
-    for (const pis of coverageMap.entries()) {
+  
+    // eslint-disable-next-line
+    for (const [minterm, pis] of coverageMap.entries()) {
       if (pis.length === 1) {
         const epi = pis[0];
         if (!this.essentialPrimeImplicants.some(e => e.equals(epi))) {
@@ -238,7 +238,7 @@ export default class QuineMcCluskeyAlgorithm {
         }
       }
     }
-
+  
     let display = "Essential Prime Implicants:\n";
     if (this.essentialPrimeImplicants.length === 0) {
       display += "No essential prime implicants found\n";
@@ -247,34 +247,35 @@ export default class QuineMcCluskeyAlgorithm {
         display += `- ${this.mintermToPOSExpression(epi)}\n`;
       }
     }
-
+  
     // Handle uncovered minterms
     const uncovered = this.mintermsDecimal.filter(m => !coveredMinterms.has(m));
     if (uncovered.length > 0) {
       display += `\nNot all minterms are covered by essential prime implicants\n`;
       display += `Uncovered minterms: ${uncovered.join(', ')}\n`;
-
+  
       // Add additional PIs to cover remaining minterms
       let remainingUncovered = [...uncovered];
       while (remainingUncovered.length > 0) {
         let bestPi = null;
         let maxCoverage = 0;
-
+  
         // Find PI that covers most uncovered minterms
         for (const pi of this.primeImplicants) {
-          if (this.essentialPrimeImplicants.some(e => e.equals(epi => epi.getBinaryRepresentation() === pi.getBinaryRepresentation()))) continue;
+          // Skip if already an essential prime implicant
+          if (this.essentialPrimeImplicants.some(epi => epi.equals(pi))) continue;
           
           let coverCount = 0;
           for (const m of remainingUncovered) {
             if (pi.doesItMatch(m)) coverCount++;
           }
-
+  
           if (coverCount > maxCoverage) {
             maxCoverage = coverCount;
             bestPi = pi;
           }
         }
-
+  
         if (bestPi && maxCoverage > 0) {
           this.essentialPrimeImplicants.push(bestPi);
           display += `Added additional prime implicant: ${this.mintermToPOSExpression(bestPi)}\n`;
@@ -286,15 +287,14 @@ export default class QuineMcCluskeyAlgorithm {
         }
       }
     }
-
+  
     display += "\nFinal Prime Implicants:\n";
     for (const pi of this.essentialPrimeImplicants) {
       display += `- ${this.mintermToPOSExpression(pi)}\n`;
     }
-
+  
     this.essentialPrimeImplicantsDisplay = display;
   }
-
   displayGroupedMinterms() {
     const groups = this.simplification[0];
     let output = '';
