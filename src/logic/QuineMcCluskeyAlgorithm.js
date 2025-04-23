@@ -300,7 +300,7 @@ export default class QuineMcCluskeyAlgorithm {
     let output = '';
 
     output += `Original minterms: ${this.originalMinterms.join(', ')}\n`;
-    output += `Using complement (maxterms): ${this.mintermsDecimal.join(', ')}\n\n`;
+    output += `Using complement: ${this.mintermsDecimal.join(', ')}\n\n`;
 
     for (let i = 0; i < groups.length; i++) {
       if (groups[i].length > 0) {

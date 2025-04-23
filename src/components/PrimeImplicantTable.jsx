@@ -18,7 +18,7 @@ const PrimeImplicantTable = ({ tableData }) => {
     <div className="card animate-fade delay-200">
       <h2 className="section-title">Prime Implicant Table</h2>
       <div className="mt-2 mb-2">
-        <strong>Note:</strong> Displaying complemented minterms (maxterms)
+        <strong>Note:</strong> Displaying complemented minterms
       </div>
       <div className="table-container">
         <table>
