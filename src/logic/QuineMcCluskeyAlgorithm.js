@@ -20,6 +20,7 @@ export default class QuineMcCluskeyAlgorithm {
     this.isTautology = this.checkTautology(mintermsDecimal);
     
     if (!this.isTautology) {
+      
       // Generate the complement of the minterms (maxterms)
       this.mintermsDecimal = this.generateComplement(mintermsDecimal);
       
