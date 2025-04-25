@@ -1,49 +1,68 @@
 /**
- *Implementation of the Quine-McCluskey algorithm for finding minimal Product of Sums (POS)
- *Boolean expressions from a set of maxterms (or complement of minterms).
- *This implementation finds the minimal POS form using essential prime implicants.
+ *Implementation of the Quine-McCluskey algorithm for simplifying boolean expressions.
+ *This class particularly focuses on converting Product of Sums (POS) expressions.
  */
 import Minterm from './Minterm';
 
 export default class QuineMcCluskeyAlgorithm {
   /**
-   *Creates a new instance of the Quine-McCluskey algorithm.
-   *@param {number[]} mintermsDecimal - Array of decimal minterms
-   *@param {string} variablesLetter - String of variable letters (e.g., "ABCD")
+   *Creates a new QuineMcCluskeyAlgorithm instance.
+   *@param {number[]} mintermsDecimal - Array of decimal values representing the original minterms.
+   *@param {string} variablesLetter - String of characters representing variables (e.g., "ABC").
    */
   constructor(mintermsDecimal, variablesLetter) {
-    //Store original minterms
+    // Store original minterms
     this.originalMinterms = [...mintermsDecimal];
     this.variablesLetter = variablesLetter;
     this.numberOfVariables = variablesLetter.length;
     
-    //Generate the complement of the minterms (maxterms)
-    this.mintermsDecimal = this.generateComplement(mintermsDecimal);
+    // Check for tautology or contradiction
+    this.isTautology = this.checkTautology(mintermsDecimal);
     
-    //Initialize data structures
-    this.mintermList = [];
-    this.simplification = []; //Holds intermediate steps of the algorithm
-    this.primeImplicants = [];
-    this.essentialPrimeImplicants = [];
-    this.simplificationDisplay = '';
-    this.primeImplicantTableDisplay = '';
-    this.essentialPrimeImplicantsDisplay = '';
+    if (!this.isTautology) {
+      // Generate the complement of the minterms (maxterms)
+      this.mintermsDecimal = this.generateComplement(mintermsDecimal);
+      
+      // Initialize data structures
+      this.mintermList = [];
+      this.simplification = [];
+      this.primeImplicants = [];
+      this.essentialPrimeImplicants = [];
+      this.simplificationDisplay = '';
+      this.primeImplicantTableDisplay = '';
+      this.essentialPrimeImplicantsDisplay = '';
 
-    //Convert decimal minterms to binary representation
-    for (const m of this.mintermsDecimal) {
-      this.mintermList.push(new Minterm(m, this.numberOfVariables));
+      // Convert decimal minterms to binary representation
+      for (const m of this.mintermsDecimal) {
+        this.mintermList.push(new Minterm(m, this.numberOfVariables));
+      }
     }
   }
 
   /**
-   *Generate the complement of the given minterms (finds maxterms).
-   *@param {number[]} minterms - Array of decimal minterms
-   *@returns {number[]} Array of decimal maxterms
+   *Check if the expression is a tautology (always true).
+   *A boolean expression is a tautology when all possible minterms are included.
+   *@param {number[]} minterms - Array of decimal values.
+   *@returns {boolean} True if the expression is a tautology.
+   */
+  checkTautology(minterms) {
+    const totalPossibleMinterms = 1 << this.numberOfVariables; // 2^n
+    
+    //If all possible minterms are included, the complement will be empty
+    //which means this is a tautology
+    return minterms.length === totalPossibleMinterms;
+  }
+
+  /**
+   *Generate the complement of the given minterms (converts to maxterms).
+   *@param {number[]} minterms - Array of decimal values.
+   *@returns {number[]} The complement set of minterms.
    */
   generateComplement(minterms) {
     const totalPossibleMinterms = 1 << this.numberOfVariables; // 2^n
     const complement = [];
     
+    //
     for (let i = 0; i < totalPossibleMinterms; i++) {
       if (!minterms.includes(i)) {
         complement.push(i);
@@ -57,26 +76,34 @@ export default class QuineMcCluskeyAlgorithm {
    *Main method to execute the Quine-McCluskey algorithm.
    */
   solve() {
-    //Step 1: Group minterms by number of ones in binary representation
+    //Check if it's a tautology first
+    if (this.isTautology) {
+      return;
+    }
+    
+    // Step 1: Group by ones
     const groups = this.groupByOnes();
 
-    //Step 2: Find prime implicants through iterative combining
+    // Step 2: Find prime implicants
     this.findPrimeImplicants(groups);
 
-    //Step 3: Create prime implicant table for visualization
+    // Step 3: Create prime implicant table
     this.createPrimeImplicantTable();
 
-    //Step 4: Find essential prime implicants to build minimal expression
+    // Step 4: Find essential prime implicants
     this.findEssentialPrimeImplicants();
   }
 
   /**
    *Groups minterms by the number of '1' bits in their binary representation.
-   *@returns {Array<Array<Minterm>>} Array of groups, where each group contains minterms with same number of ones
+   *@returns {Array<Array<Minterm>>} Groups of minterms.
    */
   groupByOnes() {
+    //Create an array of groups, one for each possible number of '1' bits
     const groups = Array(this.numberOfVariables + 1).fill().map(() => []);
+    
 
+    //Place each minterm in the appropriate group based on the number of '1' bits
     for (const m of this.mintermList) {
       const groupNumber = m.countNumberOfOnes();
       groups[groupNumber].push(m);
@@ -86,18 +113,20 @@ export default class QuineMcCluskeyAlgorithm {
   }
 
   /**
-   *Find prime implicants by iteratively combining minterms.
-   *Prime implicants are minterms that cannot be combined further.
-   *@param {Array<Array<Minterm>>} groups - Initial groups of minterms
+   *Finds all prime implicants by iteratively combining minterms that differ by one bit.
+   *@param {Array<Array<Minterm>>} groups - Initially grouped minterms.
    */
   findPrimeImplicants(groups) {
     let currentGroups = groups;
+    // Track the simplification process
     this.simplification.push(currentGroups.map(group => [...group]));
     
     //Track all terms for later verification
+    //Used Set to avoid duplicates and ensure uniqueness
     const allTerms = new Set();
     this.mintermList.forEach(m => allTerms.add(m));
 
+    //Iterate until no more combinations can be made
     while (true) {
       const newGroups = [];
       let hasCombinations = false;
@@ -105,10 +134,11 @@ export default class QuineMcCluskeyAlgorithm {
       //Track which terms were combined in this iteration
       const combinedTerms = new Set();
 
+      //Compare adjacent groups (those that differ by one '1' bit)
       for (let i = 0; i < currentGroups.length - 1; i++) {
         const currentGroup = currentGroups[i];
         const nextGroup = currentGroups[i + 1];
-
+        // If either group is empty, skip to the next iteration
         if (currentGroup.length === 0 || nextGroup.length === 0) {
           newGroups.push([]);
           continue;
@@ -116,9 +146,11 @@ export default class QuineMcCluskeyAlgorithm {
 
         const combinedGroup = [];
 
-        //Try to combine minterms from adjacent groups
+        //Try to combine each minterm from currentGroup with each from nextGroup
         for (const minterm1 of currentGroup) {
           for (const minterm2 of nextGroup) {
+            //Attempt to combine the two minterms
+            //If they differ by one bit, create a new minterm
             const { success, minterm } = minterm1.combineMinterms(minterm2);
             if (success) {
               hasCombinations = true;
@@ -131,6 +163,7 @@ export default class QuineMcCluskeyAlgorithm {
               //Check if term already exists to avoid duplicates
               const existing = combinedGroup.find(m => m.equals(minterm));
               if (existing) {
+                //Merge the set of minterms
                 minterm.getSetOfMinterms().forEach(m => existing.getSetOfMinterms().add(m));
               } else {
                 combinedGroup.push(minterm);
@@ -142,8 +175,7 @@ export default class QuineMcCluskeyAlgorithm {
         newGroups.push(combinedGroup);
       }
 
-      //Find terms that weren't combined in this iteration
-      //These become prime implicants
+      //Find terms that weren't combined - these are prime implicants
       if (currentGroups.length > 0) {
         for (const group of currentGroups) {
           for (const term of group) {
@@ -154,10 +186,11 @@ export default class QuineMcCluskeyAlgorithm {
         }
       }
 
-      //If no combinations were made, we're done
+      //If no new combinations were made, we're done
       if (!hasCombinations) break;
 
       currentGroups = newGroups;
+      //
       this.simplification.push(newGroups.map(group => [...group]));
     }
 
@@ -177,9 +210,14 @@ export default class QuineMcCluskeyAlgorithm {
   }
 
   /**
-   *Creates a visual table showing which minterms are covered by which prime implicants.
+   *Creates a textual prime implicant table showing which prime implicants cover which minterms.
    */
   createPrimeImplicantTable() {
+    if (this.isTautology) {
+      this.primeImplicantTableDisplay = "Tautology (always true): No prime implicant table needed.";
+      return;
+    }
+    
     let table = `Prime Implicant        | `;
     table += this.mintermsDecimal.map(m => m.toString().padEnd(4)).join('');
     table += '\n';
@@ -190,6 +228,7 @@ export default class QuineMcCluskeyAlgorithm {
       const expr = this.mintermToPOSExpression(pi);
       table += expr.padEnd(22) + ' | ';
       
+      //Mark which minterms this prime implicant covers
       for (const m of this.mintermsDecimal) {
         table += (pi.doesItMatch(m) ? 'X' : '').padEnd(4);
       }
@@ -200,11 +239,20 @@ export default class QuineMcCluskeyAlgorithm {
   }
 
   /**
-   *Returns structured data for the prime implicant table.
-   *@returns {Object} Object containing prime implicants and minterms data
+   *Returns structured data about the prime implicants and the minterms they cover.
+   *@returns {Object} Object containing prime implicant data and minterms.
    */
   getPrimeImplicantTableData() {
+    if (this.isTautology) {
+      return {
+        tautology: true,
+        primeImplicants: [],
+        minterms: []
+      };
+    }
+    
     return {
+      tautology: false,
       primeImplicants: this.primeImplicants.map(pi => ({
         expression: this.mintermToPOSExpression(pi),
         minterms: [...pi.getSetOfMinterms()]
@@ -214,9 +262,9 @@ export default class QuineMcCluskeyAlgorithm {
   }
 
   /**
-   *Convert a minterm to POS expression for display in the table.
-   *@param {Minterm} minterm - The minterm to convert
-   *@returns {string} POS expression representation
+   *Converts a minterm to a Product of Sums (POS) expression.
+   *@param {Minterm} minterm - The minterm to convert.
+   *@returns {string} The POS expression.
    */
   mintermToPOSExpression(minterm) {
     const binRep = minterm.getBinaryRepresentation();
@@ -247,11 +295,16 @@ export default class QuineMcCluskeyAlgorithm {
   }
 
   /**
-   *Finds essential prime implicants and additional prime implicants 
-   *needed for a minimal POS expression.
+   *Finds essential prime implicants, those that are the only ones covering a particular minterm.
+   *Also finds additional prime implicants to cover all minterms.
    */
   findEssentialPrimeImplicants() {
-    //Create map to track which prime implicants cover each minterm
+    if (this.isTautology) {
+      this.essentialPrimeImplicantsDisplay = "This is a tautology (always true). No essential prime implicants needed.";
+      return;
+    }
+    
+    //Create a map of which prime implicants cover each minterm
     const coverageMap = new Map();
     for (const m of this.mintermsDecimal) {
       coverageMap.set(m, []);
@@ -275,7 +328,7 @@ export default class QuineMcCluskeyAlgorithm {
         if (!this.essentialPrimeImplicants.some(e => e.equals(epi))) {
           this.essentialPrimeImplicants.push(epi);
           
-          //Add all minterms covered by this EPI to the covered set
+          //Add all minterms covered by this essential prime implicant
           for (const cm of this.mintermsDecimal) {
             if (epi.doesItMatch(cm)) {
               coveredMinterms.add(cm);
@@ -285,7 +338,6 @@ export default class QuineMcCluskeyAlgorithm {
       }
     }
   
-    //Create display string
     let display = "Essential Prime Implicants:\n";
     if (this.essentialPrimeImplicants.length === 0) {
       display += "No essential prime implicants found\n";
@@ -295,19 +347,19 @@ export default class QuineMcCluskeyAlgorithm {
       }
     }
   
-    //Handle uncovered minterms using a greedy approach
+    //Handle minterms not covered by essential prime implicants
     const uncovered = this.mintermsDecimal.filter(m => !coveredMinterms.has(m));
     if (uncovered.length > 0) {
       display += `\nNot all minterms are covered by essential prime implicants\n`;
       display += `Uncovered minterms: ${uncovered.join(', ')}\n`;
   
-      //Add additional PIs to cover remaining minterms
+      //Add additional prime implicants to cover remaining minterms
       let remainingUncovered = [...uncovered];
       while (remainingUncovered.length > 0) {
         let bestPi = null;
         let maxCoverage = 0;
   
-        //Find PI that covers most uncovered minterms (greedy approach)
+        //Find prime implicant that covers most uncovered minterms
         for (const pi of this.primeImplicants) {
           //Skip if already an essential prime implicant
           if (this.essentialPrimeImplicants.some(epi => epi.equals(pi))) continue;
@@ -327,10 +379,10 @@ export default class QuineMcCluskeyAlgorithm {
           this.essentialPrimeImplicants.push(bestPi);
           display += `Added additional prime implicant: ${this.mintermToPOSExpression(bestPi)}\n`;
           
-          //Remove newly covered minterms
+          //Remove covered minterms
           remainingUncovered = remainingUncovered.filter(m => !bestPi.doesItMatch(m));
         } else {
-          break; //No more coverage possible
+          break;
         }
       }
     }
@@ -344,15 +396,19 @@ export default class QuineMcCluskeyAlgorithm {
   }
 
   /**
-   *Displays the initial grouping of minterms by number of ones.
-   *@returns {string} Formatted display of grouped minterms
+   *Displays the initial grouping of minterms by number of '1' bits.
+   *@returns {string} Formatted output of grouped minterms.
    */
   displayGroupedMinterms() {
+    if (this.isTautology) {
+      return "This is a tautology (always true). No grouping needed.";
+    }
+    
     const groups = this.simplification[0];
     let output = '';
 
     output += `Original minterms: ${this.originalMinterms.join(', ')}\n`;
-    output += `Using complement: ${this.mintermsDecimal.join(', ')}\n\n`;
+    output += `Using complement (maxterms): ${this.mintermsDecimal.join(', ')}\n\n`;
 
     for (let i = 0; i < groups.length; i++) {
       if (groups[i].length > 0) {
@@ -368,10 +424,14 @@ export default class QuineMcCluskeyAlgorithm {
   }
 
   /**
-   *Displays the process of combining terms through iterations.
-   *@returns {string} Formatted display of term combinations
+   *Displays the process of combining terms throughout iterations.
+   *@returns {string} Formatted output of the term combinations.
    */
   displayCombiningTerms() {
+    if (this.isTautology) {
+      return "This is a tautology (always true). No term combinations needed.";
+    }
+    
     let output = '';
     
     for (let iter = 1; iter < this.simplification.length; iter++) {
@@ -404,27 +464,32 @@ export default class QuineMcCluskeyAlgorithm {
   }
 
   /**
-   *Returns the prime implicant table as a string.
-   *@returns {string} Formatted prime implicant table
+   *Returns the prime implicant table display.
+   *@returns {string} Formatted prime implicant table.
    */
   displayPrimeImplicantsTable() {
     return this.primeImplicantTableDisplay;
   }
 
   /**
-   *Returns the essential prime implicants table as a string.
-   *@returns {string} Formatted essential prime implicants info
+   *Returns the essential prime implicants table display.
+   *@returns {string} Formatted essential prime implicants information.
    */
   displayEssentialPrimeImplicantsTable() {
     return this.essentialPrimeImplicantsDisplay;
   }
 
   /**
-   *Gets the final minimal Product of Sums (POS) expression.
-   *@returns {string} Minimal POS expression
+   *Generates the final Product of Sums (POS) expression.
+   *@returns {string} The simplified POS expression.
    */
   getPOS() {
+    if (this.isTautology) {
+      return "POS Expression: 1 (Tautology - always true)";
+    }
+    
     if (this.essentialPrimeImplicants.length === 0) {
+      //If there are no essential prime implicants but we have minterms,
       return "No essential prime implicants";
     }
 
